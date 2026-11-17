@@ -1,17 +1,24 @@
-// A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
-// project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program
-// hands it in. It copies game.rbxl, src/, screenshots/ and PLAY.json from beside this file to /output and
-// writes /output/dossier.json, the summary the judge reads, with the vendored make.fun library. A starting
-// point, not a winner: it is a grey square that moves with the arrow keys. Build your game, rebuild
-// game.rbxl, put your PNG or JPEG screenshots in screenshots/ (the first by name is the cover, and one of
-// them is the thumbnail you upload for your game on Roblox) and fill in PLAY.json with your published place.
+// Katakata Compound: an entry for make.fun's roblox-brainrot-01 bounty (Node 22, standard library only).
+//
+// The game is this directory's Rojo project. Eko Shore is a dusk-lit street market in front of a row of
+// walled compounds: the player bags absurd "Katakata" creatures roaming the market lanes, carries one at a
+// time home through their gate, stashes it on a yard pad where it earns Gist every second, climbs six
+// rarities with Lane Passes, re-rolls Gold / Spicy / Neon / Rainbow mutations at the Pepper Pot, outruns the
+// Snatch Wave (a harmattan dust wall full of snatchers) and finally spends it all on a Come-Up for a
+// permanent multiplier. Every script is a .luau file under src/ (shared/, server/, client/), and
+//   rojo build default.project.json --output game.rbxl
+// writes game.rbxl from them.
+//
+// This program hands the game in: it copies game.rbxl, src/, screenshots/ and PLAY.json from beside this
+// file to /output and writes /output/dossier.json, the summary the judge reads, with the vendored make.fun
+// library (vendor/makefun-roblox.ts, the kit's copy, unchanged).
 //
 // Every name under /output starts with a letter, a digit or _ and holds only letters, digits, . _ and -: the
 // grader fails an entry whose output holds any other, so a file such as .gitkeep or .DS_Store copied in fails it.
 // So src/ and screenshots/ are copied without any name that starts with a dot, at any depth.
 //
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+//   rojo build default.project.json --output game.rbxl && mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
@@ -24,7 +31,14 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 /** cpSync's filter: leave out every file and directory whose name starts with a dot (.gitkeep, .DS_Store, .git). */
 const notDotted = (path: string): boolean => !basename(path).startsWith('.');
 
-copyFileSync(join(here, 'game.rbxl'), join(out, 'game.rbxl'));
+// Katakata Compound is built Rojo-first, so a missing place file means the build step was skipped: say so plainly.
+const placeFile = join(here, 'game.rbxl');
+if (!existsSync(placeFile)) {
+  throw new Error('game.rbxl is missing: run `rojo build default.project.json --output game.rbxl` first');
+}
+mkdirSync(out, { recursive: true });
+
+copyFileSync(placeFile, join(out, 'game.rbxl'));
 copyFileSync(join(here, 'PLAY.json'), join(out, 'PLAY.json'));
 cpSync(join(here, 'src'), join(out, 'src'), { recursive: true, filter: notDotted });
 mkdirSync(join(out, 'screenshots'), { recursive: true });
